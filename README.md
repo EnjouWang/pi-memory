@@ -130,4 +130,4 @@ PYTHONPATH=. python -m memory.cli forget  --id <observation-id>              # �
 
 影片：Session A 教 agent 兩項慣例（英：用 pnpm／`pnpm test`；中：commit 用繁體中文＋先跑 `make lint`）→ `/quit` 關閉 → Session B 重開，用不同問題（「How do I run the tests?」「幫我把這次修改 commit 起來」）分別驗證，agent 透過注入各自「記得」對應慣例。完整腳本見 `demo/README.md`。
 
-Demo 連結：`https://youtu.be/YbtzJhaWpM8`
+Demo 連結：[https://youtu.be/YbtzJhaWpM8]

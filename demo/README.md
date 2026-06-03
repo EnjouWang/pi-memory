@@ -2,7 +2,7 @@
 
 本檔是錄製腳本。目標：展示 agent 在**關掉重開後仍記得**上一個 session 教它的慣例，並順帶展示任務二的三項功能。
 
-> 影片連結：`https://youtu.be/YbtzJhaWpM8`
+> 影片連結：[https://youtu.be/YbtzJhaWpM8]
 
 ---
 
