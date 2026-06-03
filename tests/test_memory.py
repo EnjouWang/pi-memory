@@ -115,3 +115,43 @@ def test_store_ignores_non_list_json(tmp_store):
     core.set_memory_path(tmp_store)
     from memory.core import retrieve
     assert retrieve("anything", 5) == []
+
+
+# ── 任務二：隱私過濾 ──
+
+def test_privacy_redaction_units():
+    from memory.privacy import redact
+    assert "sk-" not in redact("key is sk-ABCDEFGH1234567890abcd")
+    assert "ghp_" not in redact("token ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZ012345")
+    assert "[REDACTED]" in redact("password=hunter2longvalue")
+    # 一般文字不應被動到
+    assert redact("this project uses pnpm test") == "this project uses pnpm test"
+
+
+def test_privacy_redaction_on_capture(tmp_store):
+    from memory.core import capture, make_observation
+    from memory import core
+    capture(make_observation("deploy with token ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZ012345"))
+    stored = core._get_store().all()
+    assert all("ghp_" not in o["summary"] for o in stored)
+
+
+# ── 任務二：/forget ──
+
+def test_forget_by_query(tmp_store):
+    from memory.core import capture, forget, make_observation
+    from memory import core
+    capture(make_observation("use pnpm not npm"))
+    capture(make_observation("deploy with docker"))
+    assert forget(query="pnpm") == 1
+    summaries = [o["summary"] for o in core._get_store().all()]
+    assert summaries == ["deploy with docker"]
+
+
+def test_forget_by_id(tmp_store):
+    from memory.core import capture, forget, make_observation
+    from memory import core
+    obs = make_observation("secret build step")
+    capture(obs)
+    assert forget(obs_id=obs["id"]) == 1
+    assert core._get_store().all() == []

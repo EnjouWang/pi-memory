@@ -36,4 +36,41 @@ def bm25_search(
 
     建議先用 tests/ 裡的 pnpm 三筆範例手動驗證（D1/D3 應勝 D2），再接 Pi / 跑 benchmark。
     """
-    raise NotImplementedError("bm25_search not implemented yet")
+    n_docs = len(docs)
+    if n_docs == 0:
+        return []
+
+    # 1) 斷詞、記每篇長度、算 avgdl
+    doc_tokens = [tokenize(d["text"]) for d in docs]
+    doc_lens = [len(toks) for toks in doc_tokens]
+    avgdl = sum(doc_lens) / n_docs if n_docs else 0.0
+
+    # 2) document frequency（df）：含某詞的文件數
+    df: Counter[str] = Counter()
+    for toks in doc_tokens:
+        for term in set(toks):
+            df[term] += 1
+
+    # 預先算每個查詢詞的 IDF（同一詞只算一次）
+    query_terms = tokenize(query)
+    idf: dict[str, float] = {}
+    for term in set(query_terms):
+        n = df.get(term, 0)
+        idf[term] = math.log((n_docs - n + 0.5) / (n + 0.5) + 1.0)
+
+    # 3) 逐篇文件加總查詢每個詞的 BM25 貢獻
+    results = []
+    for doc, toks, dl in zip(docs, doc_tokens, doc_lens):
+        tf = Counter(toks)
+        score = 0.0
+        for term in idf:  # 每個查詢詞（去重）只計一次
+            f = tf.get(term, 0)
+            if f == 0:
+                continue
+            denom = f + k1 * (1.0 - b + b * (dl / avgdl if avgdl else 0.0))
+            score += idf[term] * (f * (k1 + 1.0)) / denom
+        results.append({"id": doc["id"], "score": score})
+
+    # 4) 依分數高到低排序；同分維持原始輸入順序（stable sort）
+    results.sort(key=lambda r: r["score"], reverse=True)
+    return results[:k]

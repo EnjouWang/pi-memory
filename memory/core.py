@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .store import JsonStore
 from .bm25 import bm25_search
+from .privacy import redact
 
 _store_path = os.environ.get("PI_MEMORY_PATH") or str(Path.home() / ".pi-memory.json")
 _store: JsonStore | None = None
@@ -37,6 +38,8 @@ def estimate_tokens(text: str) -> int:
 
 def make_observation(summary: str, session_id: str = "s", tool_name: str = "remember",
                      tags: list[str] | None = None) -> dict:
+    # 任務二：隱私過濾——先遮除密鑰，再算 id，確保 secrets 不落到 memory.json。
+    summary = redact(summary)
     return {
         "id": sha256(summary),
         "sessionId": session_id,
@@ -53,10 +56,18 @@ def capture(obs: dict) -> None:
 
 
 def retrieve(query: str, k: int) -> list[dict]:
-    """(c) Retrieve：用 BM25 找出與 query 最相關的前 K 筆 Observation。"""
+    """(c) Retrieve：用 BM25 找出與 query 最相關的前 K 筆 Observation。
+
+    預設走純 BM25（確定性，供公開／隱藏測試）。設環境變數 PI_MEMORY_HYBRID=1
+    時改走任務二的 hybrid retrieval（BM25 + 本地 embedding），純 BM25 路徑不受影響。
+    """
     all_obs = _get_store().all()
     docs = [{"id": o["id"], "text": " ".join([o["summary"], *o.get("tags", [])])} for o in all_obs]
-    ranked = bm25_search(query, docs, k)
+    if os.environ.get("PI_MEMORY_HYBRID") == "1":
+        from .hybrid import hybrid_search
+        ranked = hybrid_search(query, docs, k)
+    else:
+        ranked = bm25_search(query, docs, k)
     by_id = {o["id"]: o for o in all_obs}
     return [by_id[r["id"]] for r in ranked if r["id"] in by_id]
 
@@ -74,3 +85,15 @@ def build_injection(query: str, token_budget: int = 2000, k: int = 8) -> str:
         lines.append(line)
         used += cost
     return "\n".join([header, *lines]) if lines else ""
+
+
+def forget(obs_id: str | None = None, query: str | None = None) -> int:
+    """任務二 /forget：依 id 精確刪除，或依 query 子字串（不分大小寫）刪除符合的記憶。
+    回傳刪除筆數。"""
+    store = _get_store()
+    if obs_id:
+        return 1 if store.delete(obs_id) else 0
+    if query:
+        q = query.lower()
+        return store.delete_where(lambda o: q in o["summary"].lower())
+    return 0

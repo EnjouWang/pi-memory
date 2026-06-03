@@ -3,5 +3,11 @@
 # 測試：
 pytest>=8.0
 
-# 任務二（選做）若做 hybrid retrieval，可用本地 embedding（與 HW3 相同）：
-# sentence-transformers>=2.7.0
+# 任務二：本作業已實作 hybrid retrieval（BM25 + 本地 embedding）。
+# 純 BM25 核心與單元測試「不需要」以下套件；僅在 PI_MEMORY_HYBRID=1 啟用 hybrid 時才需要。
+# 模型於第一次執行時自 Hugging Face 下載並快取，之後純本地推論、不呼叫雲端 API。
+# 開發實測版本：sentence-transformers 5.5.1 / torch 2.12.0 / numpy 2.2.6。
+# torch 不釘 local CUDA build tag，乾淨環境（含純 CPU）會自動裝對應 wheel。
+sentence-transformers>=2.7.0
+torch>=2.0
+numpy>=1.24
