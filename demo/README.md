@@ -1,6 +1,6 @@
 # Demo — 跨 session 記憶生效
 
-本檔是錄製腳本。目標：展示 agent 在**關掉重開後仍記得**上一個 session 教它的慣例，並順帶展示任務二的三項功能。
+本檔是錄製腳本。目標：展示 agent 在**關掉重開後仍記得**上一個 session 教它的慣例，並順帶展示進階功能（隱私過濾、/recall、/forget、hybrid retrieval）。
 
 > 影片連結：[https://youtu.be/YbtzJhaWpM8]
 
@@ -67,7 +67,7 @@ PYTHONPATH=. pi -e ./pi-bridge/extension.ts -e ./pi-bridge/permission-gate.ts
 
 ---
 
-## 腳本 B：任務二功能
+## 腳本 B：進階功能
 
 先指定一個乾淨記憶檔：
 ```bash

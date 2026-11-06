@@ -1,5 +1,4 @@
-"""持久層：把記憶存成 JSON 檔，重啟後讀得回來，並用 id 去重。
-load()/_persist()/add() 要你填。"""
+"""持久層：把記憶存成 JSON 檔，重啟後讀得回來，並用 id 去重。"""
 from __future__ import annotations
 import json
 import os

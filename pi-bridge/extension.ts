@@ -1,13 +1,12 @@
-// Pi bridge（已提供，學生「不需」修改）。
-// 讓 Pi 透過 CLI 呼叫本作業的 Python 記憶系統：
+// Pi bridge：讓 Pi 透過 CLI 呼叫本專案的 Python 記憶系統：
 //   - before_agent_start：呼叫 `python -m memory.cli inject` 取得注入文字，回傳 { message }
 //   - remember 工具       ：呼叫 `python -m memory.cli capture` 寫入記憶
 //
 // 重要：本檔依 earendil-works/pi 目前的 extension API 撰寫。
 // 官方文件：https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/extensions.md
 //
-// 執行方式（務必在作業 repo 根目錄，並設定 PYTHONPATH，讓 python 找得到 memory/ 套件）：
-//   cd AIASE2026-HW4
+// 執行方式（務必在 repo 根目錄，並設定 PYTHONPATH，讓 python 找得到 memory/ 套件）：
+//   cd pi-memory
 //   PYTHONPATH=. pi -e ./pi-bridge/extension.ts
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
@@ -15,7 +14,7 @@ import { spawnSync } from "node:child_process";
 
 const PY = process.env.PYTHON ?? "python3";
 // 固定以 extension 所在 repo 的根目錄為 cwd，避免從其他位置啟動時找不到 memory/ 套件。
-// import.meta.url 形如 file:///.../AIASE2026-HW4/pi-bridge/extension.ts
+// import.meta.url 形如 file:///.../pi-memory/pi-bridge/extension.ts
 const REPO_ROOT = new URL("..", import.meta.url).pathname;
 
 function callMemory(args: string[]): string {

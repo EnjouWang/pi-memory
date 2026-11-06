@@ -1,4 +1,4 @@
-"""給 Pi bridge 呼叫的 CLI：capture / retrieve / inject。學生不需修改。"""
+"""給 Pi bridge 呼叫的 CLI：capture / retrieve / inject / recall / forget。"""
 from __future__ import annotations
 import argparse
 import json
@@ -24,12 +24,12 @@ def main(argv=None):
     i.add_argument("--query", required=True)
     i.add_argument("--budget", type=int, default=2000)
 
-    # 任務二：/recall（人類可讀地列出相關記憶）
+    # /recall（人類可讀地列出相關記憶）
     rc = sub.add_parser("recall")
     rc.add_argument("--query", required=True)
     rc.add_argument("--k", type=int, default=8)
 
-    # 任務二：/forget（依 id 或 query 子字串刪除記憶）
+    # /forget（依 id 或 query 子字串刪除記憶）
     fg = sub.add_parser("forget")
     fg.add_argument("--id", default=None)
     fg.add_argument("--query", default=None)

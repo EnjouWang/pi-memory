@@ -1,4 +1,4 @@
-"""把 store + bm25 接起來，對外暴露 capture / retrieve（自動評分與 benchmark 會呼叫）。"""
+"""把 store + bm25 接起來，對外暴露 capture / retrieve / inject / forget。"""
 from __future__ import annotations
 import hashlib
 import os
@@ -38,7 +38,7 @@ def estimate_tokens(text: str) -> int:
 
 def make_observation(summary: str, session_id: str = "s", tool_name: str = "remember",
                      tags: list[str] | None = None) -> dict:
-    # 任務二：隱私過濾——先遮除密鑰，再算 id，確保 secrets 不落到 memory.json。
+    # 隱私過濾——先遮除密鑰，再算 id，確保 secrets 不落到 memory.json。
     summary = redact(summary)
     return {
         "id": sha256(summary),
@@ -58,8 +58,8 @@ def capture(obs: dict) -> None:
 def retrieve(query: str, k: int) -> list[dict]:
     """(c) Retrieve：用 BM25 找出與 query 最相關的前 K 筆 Observation。
 
-    預設走純 BM25（確定性，供公開／隱藏測試）。設環境變數 PI_MEMORY_HYBRID=1
-    時改走任務二的 hybrid retrieval（BM25 + 本地 embedding），純 BM25 路徑不受影響。
+    預設走純 BM25（確定性、可重現）。設環境變數 PI_MEMORY_HYBRID=1
+    時改走 hybrid retrieval（BM25 + 本地 embedding），純 BM25 路徑不受影響。
     """
     all_obs = _get_store().all()
     docs = [{"id": o["id"], "text": " ".join([o["summary"], *o.get("tags", [])])} for o in all_obs]
@@ -88,7 +88,7 @@ def build_injection(query: str, token_budget: int = 2000, k: int = 8) -> str:
 
 
 def forget(obs_id: str | None = None, query: str | None = None) -> int:
-    """任務二 /forget：依 id 精確刪除，或依 query 子字串（不分大小寫）刪除符合的記憶。
+    """/forget：依 id 精確刪除，或依 query 子字串（不分大小寫）刪除符合的記憶。
     回傳刪除筆數。"""
     store = _get_store()
     if obs_id:

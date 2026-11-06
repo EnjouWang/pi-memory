@@ -2,7 +2,7 @@
 """
 記憶檢索 Benchmark（study tool）。
 
-把 corpus 全部 capture 進你的記憶系統，對每個 query 呼叫你的 retrieve()，
+把 corpus 全部 capture 進記憶系統，對每個 query 呼叫 retrieve()，
 與標準答案（relevant_ids）比對，算出 Recall@k、MRR、nDCG@k。
 
 用法：
@@ -10,8 +10,7 @@
     python benchmark/run_benchmark.py --k 3
     python benchmark/run_benchmark.py --k 5 --per-query   # 顯示每題細節
 
-這支程式碼不評分，是給你自己迭代用的：改進 BM25 或加上混合排序（任務二）後，
-回來跑一次，看分數有沒有變好。Verifiability Mindset 的實際練習。
+改進 BM25 或切換 hybrid retrieval（PI_MEMORY_HYBRID=1）後重跑，比較分數變化。
 """
 from __future__ import annotations
 import argparse
@@ -52,7 +51,7 @@ def main():
     args = ap.parse_args()
     k = args.k
 
-    # 用一個暫存記憶檔，避免污染你平常的記憶
+    # 用一個暫存記憶檔，避免污染平常的記憶
     tmp = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
     tmp.close()
     os.environ["PI_MEMORY_PATH"] = tmp.name
@@ -110,20 +109,20 @@ def main():
     is_large = "large" in args.corpus
     table = REFERENCE_LARGE if is_large else REFERENCE
     ref = table.get(k, table[5])
-    label = "大語料 corpus_large（自行探索用）" if is_large else "小語料 corpus（測試基準）"
+    label = "大語料 corpus_large" if is_large else "小語料 corpus"
     print(f"--- 參考基準（pure BM25, {label}）---")
     print(f"Recall@{k} ≈ {ref['recall']:.3f} | MRR ≈ {ref['mrr']:.3f} | nDCG@{k} ≈ {ref['ndcg']:.3f}")
-    print("（純 BM25 接近上述參考值為正常。任務二的混合排序若有效，分數應「不低於」純 BM25。）\n")
+    print("（純 BM25 接近上述參考值為正常。hybrid retrieval 若有效，分數應「不低於」純 BM25。）\n")
     os.unlink(tmp.name)
 
 
-# 由助教的參考解實測填入（見題目）。學生看到這組數字當作「該打到哪」的目標。
+# 標準 BM25（k1=1.5, b=0.75）在小語料 corpus.jsonl / queries.jsonl 的實測值
 REFERENCE = {
     3: {"recall": 0.810, "mrr": 0.810, "ndcg": 0.802},
     5: {"recall": 0.810, "mrr": 0.810, "ndcg": 0.802},
 }
 
-# 大語料 corpus_large.jsonl / queries_large.jsonl（100 筆 / 40 題，自行探索用）的純 BM25 實測
+# 大語料 corpus_large.jsonl / queries_large.jsonl（100 筆 / 40 題）的純 BM25 實測
 REFERENCE_LARGE = {
     3: {"recall": 0.812, "mrr": 0.821, "ndcg": 0.782},
     5: {"recall": 0.838, "mrr": 0.826, "ndcg": 0.795},

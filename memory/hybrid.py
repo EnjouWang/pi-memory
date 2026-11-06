@@ -1,7 +1,7 @@
-"""任務二：Hybrid retrieval = BM25（lexical）+ 本地 embedding（semantic）。
+"""Hybrid retrieval = BM25（lexical）+ 本地 embedding（semantic）。
 
 設計重點：
-  - 不動 `bm25.py::bm25_search()`，純 BM25 路徑保持標準、確定性，供公開／隱藏測試驗證。
+  - 不動 `bm25.py::bm25_search()`，純 BM25 路徑保持標準、確定性，可被單元測試驗證。
   - 本檔僅在以環境變數 `PI_MEMORY_HYBRID=1` 啟用時，由 `core.retrieve()` 呼叫。
   - embedding 由本地 `sentence-transformers` 模型產生，**僅本地推論、不呼叫雲端 API**；
     模型於第一次執行時自 Hugging Face 下載並快取，之後可離線使用。

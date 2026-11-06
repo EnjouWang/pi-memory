@@ -1,4 +1,4 @@
-"""公開單元測試（隱藏測試格式相同，只換資料）。對應題目 §(c) 三筆 pnpm 範例。"""
+"""記憶系統單元測試：BM25、持久化、注入預算、隱私過濾與 /forget。"""
 import os
 import tempfile
 import pytest
@@ -82,7 +82,7 @@ def test_injection_budget(tmp_store):
     assert "[記憶" in out
 
 
-# ── edge cases（審查建議補強）──
+# ── edge cases ──
 
 def test_bm25_empty_docs():
     # 空語料不應 crash，回傳空 list
@@ -117,7 +117,7 @@ def test_store_ignores_non_list_json(tmp_store):
     assert retrieve("anything", 5) == []
 
 
-# ── 任務二：隱私過濾 ──
+# ── 隱私過濾 ──
 
 def test_privacy_redaction_units():
     from memory.privacy import redact
@@ -136,7 +136,7 @@ def test_privacy_redaction_on_capture(tmp_store):
     assert all("ghp_" not in o["summary"] for o in stored)
 
 
-# ── 任務二：/forget ──
+# ── /forget ──
 
 def test_forget_by_query(tmp_store):
     from memory.core import capture, forget, make_observation
